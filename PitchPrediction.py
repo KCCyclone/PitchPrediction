@@ -31,12 +31,19 @@ def predict_from_release_pos():
     dependent_var_predicted = clf.predict(independent_vars_test)
     print(list(dependent_var_test))
     print(dependent_var_predicted)
+
     # Generate some sample data
     x = independent_vars_test[first_dep_col]
     y = independent_vars_test[second_dep_col]
     
+     # Custom labels for True and False
+    custom_labels = {True: 'Fastball', False: 'Offspeed'}
+    
     display_vars = dependent_var_predicted
     # display_vars = dependent_var_test
+
+     # Map predicted values to custom labels for better visualization
+    labels = [custom_labels[v] for v in display_vars]
     
     pitch_to_num = {v:i for i, v in enumerate(sorted(set(display_vars)))}
     classes = [pitch_to_num[v] for v in display_vars]
@@ -52,9 +59,14 @@ def predict_from_release_pos():
         # Create the scatter plot
         plt.scatter(x, y, label=p)
     # Add labels and show the plot
-    plt.xlabel('X')
-    plt.ylabel('Y')
+    plt.xlabel('Release Position X')
+    plt.ylabel('Strikes')
     plt.legend()
+    # Custom legend labels
+    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label=custom_labels[True]),
+               plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='orange', markersize=10, label=custom_labels[False])]
+    
+    plt.legend(handles=handles)
     plt.show()
 
 predict_from_release_pos()
