@@ -10,10 +10,10 @@ from sklearn.calibration import CalibratedClassifierCV
 def categorize(pitch_type):
     if pitch_type in ['FF', 'SI', 'FC']:
         pitch_type = 'Fastball'
-    elif pitch_type in ['CH', 'FS', 'FO', 'SC']:
+    elif pitch_type in ['CH', 'FS', 'FO', 'SC', 'CU', 'KC', 'CS', 'SL', 'ST', 'SV', 'KN', 'EP']:
         pitch_type = 'Offspeed'
-    elif pitch_type in ['CU', 'KC', 'CS', 'SL', 'ST', 'SV', 'KN', 'EP']:
-        pitch_type = 'Breaking'
+    #elif pitch_type in ['CU', 'KC', 'CS', 'SL', 'ST', 'SV', 'KN', 'EP']:
+        #pitch_type = 'Breaking'
     else:
         pitch_type = 'Other'
     return pitch_type
@@ -22,7 +22,7 @@ def predict_from_release_pos():
     stats = pd.read_pickle('stats.pickle')
     print(set(stats))
     stats['pitch_type_cat'] = stats['pitch_type'].map(categorize)
-    filtered_stats = stats[stats['pitch_type_cat'] != 'Fastball']
+    #filtered_stats = stats[stats['pitch_type_cat'] != 'Fastball']
     x_divider = 0
     #y_divider = 54.2
     #stats = stats.loc[stats['balls']<=x_divider]
@@ -30,7 +30,7 @@ def predict_from_release_pos():
     first_dep_col = 'balls'
     second_dep_col = 'strikes'
     independent_col = 'pitch_type_cat'
-    independent_vars = filtered_stats[[first_dep_col, second_dep_col]] #add filtered_ in front of stats on this line and line 42 and uncomment line 25 to exclude fastball
+    independent_vars = stats[[first_dep_col, second_dep_col]] #add filtered_ in front of stats on this line and line 42 and uncomment line 25 to exclude fastball
     independent_vars_training = independent_vars.head(len(independent_vars)-test_group_size)
     # independent_vars_test = independent_vars.tail(test_group_size)
     independent_vars_test = pd.DataFrame(columns=[first_dep_col, second_dep_col])
@@ -39,7 +39,7 @@ def predict_from_release_pos():
             independent_vars_test = pd.concat([independent_vars_test, 
                                                pd.DataFrame([[ball_count, strike_count]], columns=independent_vars_test.columns)], 
                                                ignore_index=True)
-    dependent_var = filtered_stats[independent_col] #READ COMMENT ON LINE 33, filtered_
+    dependent_var = stats[independent_col] #READ COMMENT ON LINE 33, filtered_
     dependent_var_training = dependent_var.head(len(dependent_var)-test_group_size)
     dependent_var_test = dependent_var.tail(test_group_size)
     print(independent_vars_training)
