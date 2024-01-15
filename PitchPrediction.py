@@ -34,14 +34,15 @@ def cat_to_num():
         return i-1
     return cmap
 
-def create_independent_vars_test(first_indep_col, second_indep_col, first_indep_max, second_indep_max):
-    independent_vars_test = pd.DataFrame(columns=[first_indep_col, second_indep_col])
+def create_independent_vars_test(indep_column_names, first_indep_max, second_indep_max):
+    independent_vars_test = pd.DataFrame(columns=indep_column_names)
     for ball_count in range(first_indep_max):
         for strike_count in range(second_indep_max):
             independent_vars_test = pd.concat([independent_vars_test, 
                                                pd.DataFrame([[ball_count, strike_count]], columns=independent_vars_test.columns)], 
                                                ignore_index=True)
     return independent_vars_test
+
 def predict_from_release_pos():
     #stats = statcast(start_dt="2022-06-24", end_dt="2022-06-28")
     stats = pd.read_pickle('stats.pickle')
@@ -58,19 +59,18 @@ def predict_from_release_pos():
     #y_divider = 54.2
     #stats = stats.loc[stats['balls']<=x_divider]
     test_group_size = 100
-    first_dep_col = 'if_fielding_alignment_num'
-    second_dep_col = 'release_spin_rate'
-    independent_col = 'pitch_type_cat'
+    indep_column_names = ['if_fielding_alignment_num', 'release_spin_rate']
+    dependent_col = 'pitch_type_cat'
 
     # Show predictive power of independent var
     # plt.scatter(stats[second_dep_col], stats['pitch_type_cat_num'])
     # plt.show()
 
-    independent_vars = stats[[first_dep_col, second_dep_col]] #add filtered_ in front of stats on this line and line 45 and uncomment line 33 to exclude fastball
+    independent_vars = stats[indep_column_names] #add filtered_ in front of stats on this line and line 45 and uncomment line 33 to exclude fastball
     independent_vars_training = independent_vars.head(len(independent_vars)-test_group_size)
     #independent_vars_test = independent_vars.tail(test_group_size)
-    independent_vars_test = create_independent_vars_test(first_dep_col, second_dep_col, 8, 10)
-    dependent_var = stats[independent_col] #READ COMMENT ON LINE 41, filtered_
+    independent_vars_test = create_independent_vars_test(indep_column_names, 8, 10)
+    dependent_var = stats[dependent_col] #READ COMMENT ON LINE 41, filtered_
     dependent_var_training = dependent_var.head(len(dependent_var)-test_group_size)
     dependent_var_test = dependent_var.tail(test_group_size)
     print(independent_vars_training)
@@ -86,8 +86,8 @@ def predict_from_release_pos():
     print(dependent_var_probabilities)
 
     # Generate some sample data
-    x = independent_vars_test[first_dep_col]
-    y = independent_vars_test[second_dep_col]
+    x = independent_vars_test[indep_column_names[0]]
+    y = independent_vars_test[indep_column_names[1]]
     
     # Custom labels for True and False
     # custom_labeler = lambda b: "Fastball" if b else "Offspeed"
@@ -120,11 +120,11 @@ def predict_from_release_pos():
         plt.scatter(xs, ys, label=p)
     
     for (_i, row), prob in zip(independent_vars_test.iterrows(), dependent_var_probabilities):
-        plt.text(row[first_dep_col], row[second_dep_col], f'{round(max(prob), 3):.1%}', fontsize=8, ha='left', va='bottom')
+        plt.text(row[indep_column_names[0]], row[indep_column_names[1]], f'{round(max(prob), 3):.1%}', fontsize=8, ha='left', va='bottom')
     
     # Add labels and show the plot
-    plt.xlabel('Infield Fielding Alignment')
-    plt.ylabel('Release Spin Rate')
+    plt.xlabel(indep_column_names[0])
+    plt.ylabel(indep_column_names[1])
     plt.legend()
     # Custom legend labels
     '''handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label=custom_labels[True]),
